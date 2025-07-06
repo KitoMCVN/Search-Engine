@@ -1,0 +1,9 @@
+pymongo
+qdrant-client
+requests
+beautifulsoup4
+python-dotenv
+numpy
+urllib3
+sentence-transformers
+torch

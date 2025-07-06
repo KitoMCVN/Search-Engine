@@ -1,0 +1,7 @@
+.idx
+.venv
+.vscode
+.env
+
+*/__pycache__
+devserver.sh
