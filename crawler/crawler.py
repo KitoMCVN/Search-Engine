@@ -1,5 +1,6 @@
 import requests
 import uuid
+from urllib.parse import urlparse
 from .config import HEADERS, REQUEST_TIMEOUT
 from .utils import get_domain_from_url, calculate_hash, generate_embedding
 from .scraper import scrape_page
@@ -14,7 +15,15 @@ class Crawler:
         print("✅ Crawler instance for a worker is ready.")
 
     def crawl_url(self, url_to_crawl):
-        print(f"[{uuid.uuid4().hex[:6]}] Crawling: {url_to_crawl}")
+        if self.mongo_manager.url_exists(url_to_crawl):
+            print(f"[{uuid.uuid4().hex[:6]}] URL already crawled, skipping: {url_to_crawl}")
+            return
+
+        domain = get_domain_from_url(url_to_crawl)
+        if not domain:
+            return
+
+        print(f"[{uuid.uuid4().hex[:6]}] Crawling new URL: {url_to_crawl}")
 
         if not self.robot_manager.can_fetch(url_to_crawl):
             print(f"[{uuid.uuid4().hex[:6]}] 🚫 Disallowed by robots.txt. Skipping.")
@@ -44,7 +53,6 @@ class Crawler:
             return
 
         common_id = uuid.uuid4()
-        domain = get_domain_from_url(url_to_crawl)
 
         inserted_to_mongo = self.mongo_manager.insert_metadata(
             doc_id=common_id,
@@ -69,9 +77,8 @@ class Crawler:
             print(f"[{uuid.uuid4().hex[:6]}] ✅ Stored: {url_to_crawl}")
         
         new_links_found = 0
-        for link in scraped_data['links']:
-            if not self.mongo_manager.url_exists(link):
-                self.queue_manager.add_url(link, priority="low")
-                new_links_found += 1
+        for link in scraped_data['links']: 
+            self.queue_manager.add_url(link, priority="low")
+            new_links_found += 1
         if new_links_found > 0:
-            print(f"[{uuid.uuid4().hex[:6]}]   -> Found and added {new_links_found} new URLs.")
+            print(f"[{uuid.uuid4().hex[:6]}]   -> Found and added {new_links_found} new URLs to the queue.")

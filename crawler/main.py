@@ -28,7 +28,7 @@ def main():
     proxy_manager = ProxyManager()
     robot_manager = RobotManager()
 
-    if mongo_manager.collection is None or qdrant_manager.client is None:
+    if mongo_manager.metadata_collection is None or qdrant_manager.client is None:
         print("❌ Database connection failed. Exiting.")
         return
 
@@ -41,9 +41,9 @@ def main():
                 if get_domain_from_url(url) and not mongo_manager.url_exists(url):
                     queue_manager.add_url(url, priority="high")
                     queued_count += 1
-            print(f"✅ Queued {queued_count} initial URLs.")
+            print(f"✅ Queued {queued_count} new initial URLs to crawl.")
     except FileNotFoundError:
-        print("⚠️ `data/urls.txt` not found. Crawler will wait for new URLs.")
+        print("⚠️ `data/urls.txt` not found. Crawler will wait for new URLs discovered.")
     
     crawler_instance = Crawler(
         queue_manager=queue_manager,
