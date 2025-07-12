@@ -1,6 +1,6 @@
 import requests
 from urllib.robotparser import RobotFileParser
-from .config import USER_AGENT
+from utils.config import USER_AGENT
 
 class RobotManager:
     def __init__(self):

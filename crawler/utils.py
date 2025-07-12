@@ -1,10 +1,12 @@
 import hashlib
-from urllib.parse import urlparse
 from sentence_transformers import SentenceTransformer
-from .config import EMBEDDING_MODEL
+from urllib.parse import urlparse
+from utils.config import EMBEDDING_MODEL
+from utils.logger import ConsoleLogger 
 
 embedding_model = SentenceTransformer(EMBEDDING_MODEL)
-print("✅ Model loaded.")
+log = ConsoleLogger()
+log.info("Model loaded")
 
 def get_domain_from_url(url):
     try:

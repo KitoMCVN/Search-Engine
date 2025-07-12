@@ -1,18 +1,20 @@
 import numpy as np
 import time
 from collections import deque
-from .config import QUEUE_PRIORITIES, QUEUE_PROBABILITIES, DOMAIN_CRAWL_DELAY
-from .utils import get_domain_from_url
+from crawler.utils import get_domain_from_url
+from utils.logger import ConsoleLogger
+from utils.config import QUEUE_PRIORITIES, QUEUE_PROBABILITIES, DOMAIN_CRAWL_DELAY
 
 class URLQueueManager:
     def __init__(self):
+        self.log = ConsoleLogger()
         self.queues = {p: deque() for p in QUEUE_PRIORITIES}
         self.domain_last_accessed = {}
-        print("✅ URL Queue Manager initialized.")
+        self.log.info("URL Queue Manager initialized")
 
     def add_url(self, url, priority="medium"):
         if priority not in self.queues:
-            print(f"Warning: Invalid priority '{priority}'. Defaulting to 'medium'.")
+            self.log.warn(f"Invalid priority '{priority}'. Defaulting to 'medium'")
             priority = "medium"
         self.queues[priority].append(url)
 

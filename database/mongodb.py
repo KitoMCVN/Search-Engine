@@ -1,24 +1,22 @@
 import pymongo
-from .config import MONGODB_URL, MONGODB_DB_NAME
 from datetime import datetime
+from utils.logger import ConsoleLogger    
+from utils.config import MONGODB_URL, MONGODB_DB_NAME
 
 class MongoDBManager:
     def __init__(self):
         try:
+            self.log = ConsoleLogger()
             self.client = pymongo.MongoClient(MONGODB_URL, serverSelectionTimeoutMS=5000)
-            self.client.server_info() 
+            self.client.server_info()
             self.db = self.client[MONGODB_DB_NAME]
-            
             self.metadata_collection = self.db["metadata"]
-            
-            print("✅ MongoDB connected successfully.")
-            
+            self.log.info("MongoDB connected successfully")
             self.metadata_collection.create_index("url", unique=True)
             self.metadata_collection.create_index("content_hash")
             self.metadata_collection.create_index("domain")
-
         except Exception as e:
-            print(f"❌ Could not connect to MongoDB: {e}")
+            self.log.error(f"Could not connect to MongoDB: {e}")
             self.client = None
             self.db = None
             self.metadata_collection = None
@@ -34,7 +32,7 @@ class MongoDBManager:
     def insert_metadata(self, doc_id, url, domain, content_hash, title, description):
         if self.metadata_collection is None: return False
         document = {
-            "_id": str(doc_id), 
+            "_id": str(doc_id),
             "url": url,
             "domain": domain,
             "content_hash": content_hash,

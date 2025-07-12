@@ -8,7 +8,10 @@ from crawler.robot import RobotManager
 from crawler.proxies import ProxyManager
 from crawler.crawler import Crawler
 from crawler.utils import get_domain_from_url
-from crawler.config import MAX_CRAWLER_WORKERS, QUEUE_FETCH_TIMEOUT
+from utils.logger import ConsoleLogger
+from utils.config import MAX_CRAWLER_WORKERS, QUEUE_FETCH_TIMEOUT
+
+log = ConsoleLogger() 
 
 def worker_task(queue_manager, crawler_instance):
     while True:
@@ -17,7 +20,7 @@ def worker_task(queue_manager, crawler_instance):
             try:
                 crawler_instance.crawl_url(url)
             except Exception as e:
-                print(f"FATAL ERROR processing {url}: {e}")
+                log.error(f"FATAL ERROR processing {url}: {e}")
         else:
             time.sleep(QUEUE_FETCH_TIMEOUT)
 
@@ -29,7 +32,7 @@ def main():
     robot_manager = RobotManager()
 
     if mongo_manager.metadata_collection is None or qdrant_manager.client is None:
-        print("❌ Database connection failed. Exiting.")
+        log.error("Database connection failed. Exiting")
         return
 
     try:
@@ -41,9 +44,9 @@ def main():
                 if get_domain_from_url(url) and not mongo_manager.url_exists(url):
                     queue_manager.add_url(url, priority="high")
                     queued_count += 1
-            print(f"✅ Queued {queued_count} new initial URLs to crawl.")
+            log.info(f"Queued {queued_count} new initial URLs to crawl")
     except FileNotFoundError:
-        print("⚠️ `data/urls.txt` not found. Crawler will wait for new URLs discovered.")
+        log.warn("⚠️ `data/urls.txt` not found. Crawler will wait for new URLs discovered")
     
     crawler_instance = Crawler(
         queue_manager=queue_manager,

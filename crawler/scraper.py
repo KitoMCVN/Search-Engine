@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 def scrape_page(html_content, base_url):
     soup = BeautifulSoup(html_content, 'html.parser')
     
-    title = soup.title.string.strip() if soup.title else ""
+    title = soup.title.get_text(strip=True) if soup.title else ""
     
     description_tag = soup.find('meta', attrs={'name': 'description'})
     description = description_tag['content'].strip() if description_tag and description_tag.get('content') else ""
